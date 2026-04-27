@@ -60,7 +60,9 @@ framework/
 ├── tests/
 │   └── api/              # API test suite
 ├── api-client/           # Generated SDK from OpenAPI spec (tool-generated)
+├── src/openapi.json      # Generated OpenAPI spec file
 ├── openapi-generator/    # OpenAPI code generation tool (cloned)
+├── swagger-php/          # OpenAPI spec generation tool (cloned)
 ├── AGENTS.md             # Updated with API endpoint agent instructions
 └── composer.json         # Updated with api:doc, api:sdk, test:api commands
 ```

@@ -86,16 +86,17 @@ Refering to the `.json` file built by `composer run api:doc` command below.
 Add the following composer commands to `framework/composer.json`.  
 Rationale:  Manual implementation introduces unjustifiable complexity.  
 
-*api:doc*  
-Generates an OpenAPI compatible `.json` file, read from source files in \Api namespace.  
-Uses `zircote/swagger-php` for generating `openapi.json` spec file.  
+*api:doc*
+Generates an OpenAPI compatible `.json` file, read from source files in \Api namespace.
+Uses `zircote/swagger-php` for generating `openapi.json` spec file.
 Clone `swagger-php` into the `framework/` folder
+The generated `openapi.json` file must be written to `framework/src/openapi.json`.
 
 *api:sdk*
 Generates a PHP sdk.  
 Uses `OpenAPITools/openapi-generator`  
 Clone `openapi-generator` into the `framework/` folder.  
-API client/sdk must be generated to `framework/api-client`  
+The generated API client must be written to `framework/api-client`  
 
 **Ask questions**
 Ask questions during planning, if any discrepencies are found
