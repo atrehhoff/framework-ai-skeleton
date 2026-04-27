@@ -3,12 +3,13 @@ Always adhere to the instructions outlined in above files, unless stated otherwi
 
 Study the documentation found in `framework/docs`
 
-Before anything else, the database connection must be set up.  
-Verify env vars are available, and abort further implementation.  
-In the event any of the below variables are not available.  
+Before anything else, the database connection and baseurl must be set up.  
+Verify env vars are available, and abort further implementation,  
+in the event any of the below variables are not available.  
 
 The following env vars will be available.  
 use `sed` to replace into `framework/storage/config/global.jsonc`  
+- `APP_URL` Value for `baseurl` entry
 - `DB_HOST` Hostname of the database
 - `DB_USER` Username for the database
 - `DB_PASS` Password for the database user

@@ -28,6 +28,7 @@ Use your preferred AI agent to implement the development plan:
 
 **Copilot:**
 ```bash
+APP_URL="REPLACE_THIS_VALUE" \
 DB_HOST="REPLACE_THIS_VALUE" \
 DB_NAME="REPLACE_THIS_VALUE" \
 DB_USER="REPLACE_THIS_VALUE" \
@@ -37,6 +38,7 @@ copilot --prompt "Read @PROMPT.md"
 
 **Claude:**
 ```bash
+APP_URL="REPLACE_THIS_VALUE" \
 DB_HOST="REPLACE_THIS_VALUE" \
 DB_NAME="REPLACE_THIS_VALUE" \
 DB_USER="REPLACE_THIS_VALUE" \
