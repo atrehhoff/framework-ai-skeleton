@@ -4,7 +4,7 @@ A skeleton project for building AI-first REST APIs using a custom PHP framework.
 
 ---
 
-## Quick Start
+## Getting started
 
 ### 1. Clone the Repository
 
