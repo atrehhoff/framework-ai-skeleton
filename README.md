@@ -69,4 +69,4 @@ framework/
 
 ## Next Steps
 
-🔗 See [PLAN.md](./PLAN.md) for comprehensive development instructions and API endpoint specifications.
+🔗 See [PROMPT.md](./PROMPT.md) for comprehensive development instructions and API endpoint specifications.  
