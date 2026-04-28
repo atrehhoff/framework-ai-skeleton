@@ -13,8 +13,23 @@ Use `sed` to replace into `framework/storage/config/global.jsonc`
 - `DB_PASS` Password for the database user
 - `DB_NAME` Name of the database to use
 
-The codebase in `framework/` is intended to be integrated with using API's
+The codebase in `framework/` is intended to be integrated with using API endpoints
+However also be geared to have a multi-domain UI for end-users to visit after login  
+via API endpoints.
+
 You must therefore implement the following:
+
+**Multisite setup**
+An integrator is a customer site that holds users and other data to be synced via APIs.  
+This framework will support multiple integrators.  
+
+Each integrator can be configured as a subdomain (e.g., `integrator-a.example.com`, `integrator-b.example.com`).  
+These subdomains are used to scope all entities — users, data, etc. — to their respective integrator domain.
+
+To implement multisite support:
+1. Adjust `baseurl` config to support an array of domains instead of a single string
+2. Review and update systems that depend on baseurl: HTTPS redirect listeners, the `\Url` class, and any other URL generation logic
+3. Ensure entity queries in controllers filter by the current request domain to prevent data leakage between integrators  
 
 **API controller**  
 A global API controller that re-routes every `/api/*` request to a namespaced api-controller.  
@@ -26,10 +41,39 @@ fx.
 - /api/product/delete -> \Api\ProductController::delete()  
 - /api/product/create -> \Api\ProductController::create()  
 
+**API endpoints**
 Implement a simple `/api/ping` endpoint for integrators to use when validating API keys.  
 Therefore authentication should be required.  
 
-Build documentation and sdk when endpoint is implemented.  
+Build documentation and sdk when endpoints is implemented.  
+
+**External login flow**
+Copy the bundled classes in `shiver-kickstart/` folder to `framework/src/` and apply the provided SQL-file for database structure.  
+
+Implement a `/api/session` endpoint for integrators to start a new login session. The endpoint accepts:
+- `apiKey` (authentication)
+- `clientDomain` (the integrator's domain)
+- Basic user data
+
+When `/api/session` is called:
+1. Create a user entity in the database, if it doesn't exist already, scoped by `clientDomain` + `email`
+2. Generate a 10-minute temporary `LoginCode` entity and store it in DB
+3. Construct a `redirectUrl` by combining: `clientDomain` + login-controller-path + `LoginCode`  
+   Example: `clientdomain.tld/login/xxxx-xxxx-4xxx-xxxx-xxxxx`
+4. Return this `redirectUrl` to the requesting client
+
+The client then redirects the user to the returned `redirectUrl` with the `loginCode` included.
+
+The `LoginController` on our side validates the `loginCode` and:
+1. Verifies the `loginCode` matches a valid, non-expired entry in the database
+2. Generates a UUIDv4 value for the `cookieValue` column and stores it in the `session` table
+3. Sets this `cookieValue` as a secure session cookie with appropriate expiration
+
+For non-API requests, authentication is validated by checking:
+- The `cookieValue` cookie exists and matches an entry in the database and matches the `clientDomain`
+- The `clientDomain` scoping matches the current request domain  
+
+Login codes should be deleted when expired or used to spawn a session.  
 
 **API authentication**  
 Implement API key authentication using header `X-Api-Key`.  
@@ -39,6 +83,7 @@ Authentication must happen in the global `ApiController`
 Create the following DB table:
 - Table: `apiKey`
 	- Col: `apiKey` (primary, UUIDv4)
+	- Col: `clientDomain` (The integrator primary domain)
 	- Col: `comment` (Human readable comment)
 	- Col: `lastUsed` (datetime)
 
@@ -139,3 +184,8 @@ New endpoints requires new tests in the `framework/tests/api/` directory.
 ## Coding standards
 After each implementation coding standards must be varified using `composer run cs`
 ```
+
+### Final exceptions
+While implementing this plan, running SQL queries directly  
+using `mysql` command and the provided env vars, is explicitly  
+allowed, regardless of other instructions provided in `framework/`
