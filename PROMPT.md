@@ -19,18 +19,6 @@ via API endpoints.
 
 You must therefore implement the following:
 
-**Multisite setup**
-An integrator is a customer site that holds users and other data to be synced via APIs.  
-This framework will support multiple integrators.  
-
-Each integrator can be configured as a subdomain (e.g., `integrator-a.example.com`, `integrator-b.example.com`).  
-These subdomains are used to scope all entities — users, data, etc. — to their respective integrator domain.
-
-To implement multisite support:
-1. Adjust `baseurl` config to support an array of domains instead of a single string
-2. Review and update systems that depend on baseurl: HTTPS redirect listeners, the `\Url` class, and any other URL generation logic
-3. Ensure entity queries in controllers filter by the current request domain to prevent data leakage between integrators  
-
 **API controller**  
 A global API controller that re-routes every `/api/*` request to a namespaced api-controller.  
 Leverage on-top-off the built-in request/response handling.  
@@ -68,11 +56,13 @@ The `LoginController` on our side validates the `loginCode` and:
 1. Verifies the `loginCode` matches a valid, non-expired entry in the database
 2. Generates a UUIDv4 value for the `cookieValue` column and stores it in the `session` table
 3. Sets this `cookieValue` as a secure session cookie with appropriate expiration
+4. Updates  `clientDomain` derived from generated `loginCode` on the session
 
 For non-API requests, authentication is validated by checking:
 - The `cookieValue` cookie exists and matches an entry in the database and matches the `clientDomain`
 - The `clientDomain` scoping matches the current request domain  
 
+Create `session`.`clientDomain` column if it doesn't exist - this will be used to scope entities.  
 Login codes should be deleted when expired or used to spawn a session.  
 
 **API authentication**  
