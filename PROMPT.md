@@ -46,11 +46,17 @@ Implement a `/api/session` endpoint for integrators to start a new login session
 When `/api/session` is called:
 1. Create a user entity in the database, if it doesn't exist already, scoped by `clientId` + `email`
 2. Generate a 10-minute temporary `LoginCode` entity and store it in DB
-3. Construct a `redirectUrl` by combining: `clientId` + login-controller-path + `LoginCode`  
-   Example: `clientId.tld/login/xxxx-xxxx-4xxx-xxxx-xxxxx`
+3. Construct a `redirectUrl` by combining: baseurl + login-controller-path + $iLoginCode-id()  
+   Example: `https://example.com/login/xxxx-xxxx-4xxx-xxxx-xxxxx`
 4. Return this `redirectUrl` to the requesting client
 
 The client then redirects the user to the returned `redirectUrl` with the `loginCode` included.
+
+Following outlines the table for `LoginCode` entity.  
+- Table: `loginCode`
+	- Col: `loginCodeId` (Primary, UUIDv4)
+	- Col: `clientId` (The requesting client id for scoping)
+	- Col: `expires` (datetime)
 
 The `LoginController` on our side validates the `loginCode` and:
 1. Verifies the `loginCode` matches a valid, non-expired entry in the database
@@ -136,10 +142,12 @@ Clone `openapi-generator` into the `framework/` folder.
 The generated API client must be written to `framework/api-client`  
 
 **Ask questions**
-Ask questions during planning, if any discrepencies are found
-between those instructions and what the framework provides.
+Ask questions during planning to clarify, if anything in these instructions is any of:
+1. Not immediately clear
+2. Ambiguous
+3. Has discrepancies in relation to what the framework provides
 
-Ask and suggest alternatives in the event any of the above proves tricky to complete.  
+Ask and suggest alternatives in the event answers to any of the above proves tricky to complete.
 fx. multiple commands failing in a row.  
 
 **Further instructions**  
@@ -179,7 +187,9 @@ Otherwise always use the `test` command that will cover all test suites.
 New endpoints requires new tests in the `framework/tests/api/` directory.  
 
 ## Coding standards
-After each implementation coding standards must be varified using `composer run cs`
+After each implementation coding standards must be varified using `composer run cs`  
+Entities should always use UUIDv4 as their primary key.  
+The bundled database library provides a useable trait, that will automatically enable this.  
 ```
 
 ### Final exceptions
