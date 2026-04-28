@@ -39,15 +39,15 @@ Build documentation and sdk when endpoints is implemented.
 Copy the bundled classes in `shiver-kickstart/` folder to `framework/src/` and apply the provided SQL-file for database structure.  
 
 Implement a `/api/session` endpoint for integrators to start a new login session. The endpoint accepts:
-- `apiKey` (authentication)
-- `clientDomain` (the integrator's domain)
-- Basic user data
+- `X-Api-Key` (header, authentication)
+- `X-Client-Id` (header, the integrator's id)
+- Basic user data (json, payload)
 
 When `/api/session` is called:
-1. Create a user entity in the database, if it doesn't exist already, scoped by `clientDomain` + `email`
+1. Create a user entity in the database, if it doesn't exist already, scoped by `clientId` + `email`
 2. Generate a 10-minute temporary `LoginCode` entity and store it in DB
-3. Construct a `redirectUrl` by combining: `clientDomain` + login-controller-path + `LoginCode`  
-   Example: `clientdomain.tld/login/xxxx-xxxx-4xxx-xxxx-xxxxx`
+3. Construct a `redirectUrl` by combining: `clientId` + login-controller-path + `LoginCode`  
+   Example: `clientId.tld/login/xxxx-xxxx-4xxx-xxxx-xxxxx`
 4. Return this `redirectUrl` to the requesting client
 
 The client then redirects the user to the returned `redirectUrl` with the `loginCode` included.
@@ -56,26 +56,29 @@ The `LoginController` on our side validates the `loginCode` and:
 1. Verifies the `loginCode` matches a valid, non-expired entry in the database
 2. Generates a UUIDv4 value for the `cookieValue` column and stores it in the `session` table
 3. Sets this `cookieValue` as a secure session cookie with appropriate expiration
-4. Updates  `clientDomain` derived from generated `loginCode` on the session
+4. Updates  `clientId` derived from generated `loginCode` on the session
 
 For non-API requests, authentication is validated by checking:
-- The `cookieValue` cookie exists and matches an entry in the database and matches the `clientDomain`
-- The `clientDomain` scoping matches the current request domain  
+- The `cookieValue` cookie exists and matches an entry in the database and matches the `clientId`
+- The `clientId` scoping matches the current request domain  
 
-Create `session`.`clientDomain` column if it doesn't exist - this will be used to scope entities.  
+Create `session`.`clientId` column if it doesn't exist - this will be used to scope entities.  
 Login codes should be deleted when expired or used to spawn a session.  
 
 **API authentication**  
 Implement API key authentication using header `X-Api-Key`.  
-Assume API keys will be UUIDv4's  
+Client identification using `X-Client-Id`.  
+Assume API keys will be UUIDv4's.  
 Authentication must happen in the global `ApiController`  
 
 Create the following DB table:
 - Table: `apiKey`
 	- Col: `apiKey` (primary, UUIDv4)
-	- Col: `clientDomain` (The integrator primary domain)
+	- Col: `clientId` (scopes the key to a single client)
 	- Col: `comment` (Human readable comment)
 	- Col: `lastUsed` (datetime)
+
+Authentication must validate the provided `X-Client-Id` matches with the `X-Api-Key`
 
 **API logging**
 Create the following DB table:
@@ -151,6 +154,10 @@ Following points is required to have documented for each endpoint.
 - Request method  
 - Parameters/Properties  
 - Response  
+
+Always respond with proper HTTP codes upon errors.  
+Assert proper request methods for endpoints, GET, POST, PUT, PATCH, DELETE.  
+Follow RESTful standards to the extent possible by the framework.  
 
 ## API request/response contract
 All API responses must be JSON and follow this structure:
