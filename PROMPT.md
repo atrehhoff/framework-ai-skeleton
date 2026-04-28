@@ -135,4 +135,7 @@ If only files in the `\Api` namespace is altered, running `api:test` is fair gam
 Otherwise always use the `test` command that will cover all test suites.  
 
 New endpoints requires new tests in the `framework/tests/api/` directory.  
+
+## Coding standards
+After each implementation coding standards must be varified using `composer run cs`
 ```
