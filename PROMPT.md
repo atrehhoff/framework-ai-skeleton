@@ -19,7 +19,7 @@ via API endpoints.
 
 You must therefore implement the following:
 
-**API controller**  
+### API controller
 A global API controller that re-routes every `/api/*` request to a namespaced api-controller.  
 Leverage on-top-off the built-in request/response handling.  
 Maintain support client preffered response type via `Accept:` header and the `RespondWith` attribute for developer to override.  
@@ -29,13 +29,13 @@ fx.
 - /api/product/delete -> \Api\ProductController::delete()  
 - /api/product/create -> \Api\ProductController::create()  
 
-**API endpoints**
+### API endpoints
 Implement a simple `/api/ping` endpoint for integrators to use when validating API keys.  
 Therefore authentication should be required.  
 
 Build documentation and sdk when endpoints is implemented.  
 
-**External login flow**
+### External login flow 
 Copy the bundled classes in `shiver-kickstart/` folder to `framework/src/` and apply the provided SQL-file for database structure.  
 
 Implement a `/api/session` endpoint for integrators to start a new login session. The endpoint accepts:
@@ -74,7 +74,7 @@ For non-API requests, authentication is validated by checking:
 Create `session`.`clientId` column if it doesn't exist - this will be used to scope entities.  
 Login codes should be deleted when expired or used to spawn a session.  
 
-**API authentication**  
+### API authentication 
 Implement API key authentication using header `X-Api-Key`.  
 
 clientId's will always be determined by the provided `X-Api-Key`.  
@@ -92,7 +92,7 @@ Create the following DB table:
 
 Authentication must validate the provided `X-Client-Id` matches with the `X-Api-Key`
 
-**API logging**
+### API logging
 Create the following DB table:
 - Table: `apiLog`
 	- Col: `logId` (primary, UUIDv4)
@@ -110,7 +110,7 @@ Response headers must always contain `X-Log-Id` header, containing the UUID from
 Insert log-entry early in request-phase.  
 Update with response later.  
 
-**API testing**  
+### API testing
 Scaffold a new testsuite in `framework/tests/api`
 
 Currently provided `test` command should always run all testsuites configured.
@@ -118,7 +118,7 @@ Add a new `test:api` command to `framework/composer.json` that runs only api tes
 
 Generate a UUIDv4 api key and insert in the `apiKey` table.
 
-**API classes**  
+### API classes
 Classes in the `\Api` namespace not directly related to endpoints, must be in a subfolder.  
 Avoid the use of static methods in non-endpoint classes.  
 
@@ -127,7 +127,7 @@ Following classes are required:
 - \Api\Support\Validator - For request method assertions (and other needed validation)
 - - Implements: `assertMethod($expected)`
 
-**API documentation**  
+### API documentation
 Create a `/api-documentation` controller.  
 In a corrosponding view file `stoplightio/elements` must be implement using a web component.
 Refering to the `.json` file built by `composer run api:doc` command below.  
@@ -147,7 +147,7 @@ Uses `OpenAPITools/openapi-generator`
 Clone `openapi-generator` into the `framework/` folder.  
 The generated API client must be written to `framework/api-client`  
 
-**Ask questions**
+### Ask questions
 Ask questions during planning to clarify, if anything in these instructions is any of:
 1. Not immediately clear
 2. Ambiguous
@@ -156,7 +156,7 @@ Ask questions during planning to clarify, if anything in these instructions is a
 Ask and suggest alternatives in the event answers to any of the above proves tricky to complete.
 fx. multiple commands failing in a row.  
 
-**Further instructions**  
+### Further instructions 
 Add the following agent instructions to `framework/AGENTS.md`.  
 Below instructions also apply to this implementation sprint.  
 
