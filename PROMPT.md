@@ -40,15 +40,16 @@ Copy the bundled classes in `shiver-kickstart/` folder to `framework/src/` and a
 
 Implement a `/api/session` endpoint for integrators to start a new login session. The endpoint accepts:
 - `X-Api-Key` (header, authentication)
-- `X-Client-Id` (header, the integrator's id)
 - Basic user data (json, payload)
 
 When `/api/session` is called:
 1. Create a user entity in the database, if it doesn't exist already, scoped by `clientId` + `email`
 2. Generate a 10-minute temporary `LoginCode` entity and store it in DB
-3. Construct a `redirectUrl` by combining: baseurl + login-controller-path + $iLoginCode-id()  
-   Example: `https://example.com/login/xxxx-xxxx-4xxx-xxxx-xxxxx`
-4. Return this `redirectUrl` to the requesting client
+3. Construct a sha-256 hashed token of `LoginCode` + $secret, for integrity check by `LoginController`.  
+	2.1 $secret is an internal random, securely generated secret stored in `global.jsonc`.  
+4. Construct a `redirectUrl` by combining: baseurl + login-controller-path + $iLoginCode-id() + $token
+   Example: `https://example.com/login/xxxx-xxxx-4xxx-xxxx-xxxxx/sha256-token`
+5. Return this `redirectUrl` to the requesting client
 
 The client then redirects the user to the returned `redirectUrl` with the `loginCode` included.
 
@@ -59,10 +60,12 @@ Following outlines the table for `LoginCode` entity.
 	- Col: `expires` (datetime)
 
 The `LoginController` on our side validates the `loginCode` and:
-1. Verifies the `loginCode` matches a valid, non-expired entry in the database
-2. Generates a UUIDv4 value for the `cookieValue` column and stores it in the `session` table
-3. Sets this `cookieValue` as a secure session cookie with appropriate expiration
-4. Updates  `clientId` derived from generated `loginCode` on the session
+1. Verifies a token exists in request URI, and that the hash matches again the `LoginCode` + $token.
+	1.1 fx. $ourToken === $theirToken pattern.  
+2. Verifies the `loginCode` matches a valid, non-expired entry in the database
+3. Generates a UUIDv4 value for the `cookieValue` column and stores it in the `session` table
+4. Sets this `cookieValue` as a secure session cookie with appropriate expiration
+5. Updates  `clientId` derived from generated `loginCode` on the session
 
 For non-API requests, authentication is validated by checking:
 - The `cookieValue` cookie exists and matches an entry in the database and matches the `clientId`
@@ -73,7 +76,10 @@ Login codes should be deleted when expired or used to spawn a session.
 
 **API authentication**  
 Implement API key authentication using header `X-Api-Key`.  
-Client identification using `X-Client-Id`.  
+
+clientId's will always be determined by the provided `X-Api-Key`.  
+And must always be available to all endpoints througha property inherited from ApiController.  
+
 Assume API keys will be UUIDv4's.  
 Authentication must happen in the global `ApiController`  
 
@@ -166,6 +172,8 @@ Following points is required to have documented for each endpoint.
 Always respond with proper HTTP codes upon errors.  
 Assert proper request methods for endpoints, GET, POST, PUT, PATCH, DELETE.  
 Follow RESTful standards to the extent possible by the framework.  
+
+API Endpoint must always extend the ApiController class.  
 
 ## API request/response contract
 All API responses must be JSON and follow this structure:
